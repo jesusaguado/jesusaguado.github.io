@@ -6,7 +6,17 @@
     <description>Recent content in Posts on Jesus Aguado</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 15 Nov 2022 23:18:06 +0100</lastBuildDate><atom:link href="https://jesusaguado.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 16 Nov 2022 11:03:57 +0100</lastBuildDate><atom:link href="https://jesusaguado.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Sphere Geometry</title>
+      <link>https://jesusaguado.github.io/posts/sphere-geometry/</link>
+      <pubDate>Wed, 16 Nov 2022 11:03:57 +0100</pubDate>
+      
+      <guid>https://jesusaguado.github.io/posts/sphere-geometry/</guid>
+      <description>Geometry and analysis of spatial data on the Earth This is a short post about the DBSCAN algorithm when applied to spatial datapoints on the Earth. I became interested in this when trying to cluster weatherstations in Canada.
+Clustering is a technique in unsupervised machine learning that, given a numeric dataset, aims at bundling together some observations based on coordinate similarities. When working with abstract data, we often think of this dataset as lying on \(m\)-dimensional space \(\mathbb{R}^m\), where \(m\) is the number of variables or columns in our data.</description>
+    </item>
+    
     <item>
       <title>Hugo</title>
       <link>https://jesusaguado.github.io/posts/hugo/</link>

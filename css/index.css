@@ -11,6 +11,10 @@
   font-style: normal;
 }
 
+.center {
+      text-align: center;
+}
+
 html {
   background: #d3d4db;
   font-size: 16px;
