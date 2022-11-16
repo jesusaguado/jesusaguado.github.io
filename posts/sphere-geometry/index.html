@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Sphere Geometry | Jesus Aguado</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.105.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://jesusaguado.github.io/css/index.css">
+<link rel="canonical" href="https://jesusaguado.github.io/posts/sphere-geometry/">
+<link rel="alternate" type="application/rss+xml" href="" title="Jesus Aguado">
+<link rel="stylesheet" href="https://jesusaguado.github.io/katex/katex.min.css">
+<script defer src="https://jesusaguado.github.io/katex/katex.min.js"></script>
+<script defer src="https://jesusaguado.github.io/katex/contrib/auto-render.min.js" onload="renderMathInElement(document.body)"></script>
+
+<header>
+  
+    <a href="https://jesusaguado.github.io/" class="title">Jesus Aguado</a>
+  
+  
+</header>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+    integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+    integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4"
+    crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+    integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+
+
+<article>
+  <header>
+    <h1>Sphere Geometry</h1>
+    <time datetime="2022-11-16T01:03:57&#43;01:00">November 16, 2022</time>
+  </header>
+  <h1 id="geometry-and-analysis-of-spatial-data-on-the-earth">Geometry and analysis of spatial data on the Earth</h1>
+<p>This is a short post about the DBSCAN algorithm when applied to spatial datapoints
+on the Earth. I became interested in this when trying to cluster weatherstations
+in Canada.</p>
+<p>Clustering is a technique in unsupervised machine learning that, given a numeric
+dataset, aims at bundling together some observations based on coordinate similarities.
+When working with abstract data, we often think of this dataset as lying on
+\(m\)-dimensional space \(\mathbb{R}^m\), where \(m\) is the number of variables or
+columns in our data.</p>
+<p>DBSCAN, or <a href="https://en.wikipedia.org/wiki/DBSCAN">Density-based spatial clustering of applications with noise</a>
+is a particular algorithm that clusters data in a noise-robust manner, allowing
+for outliers. The main idea behind
+it is to identify high-density areas in our data and declare these points as
+belonging to the same cluster. To do this, DBSCAN goes over the following steps
+together with two prescribed parameters: \(r\) and \(N\) (<em>radius</em> and
+<em>number of neighbors</em>):</p>
+<ol>
+<li>Select any point in our dataset, call it \(x_0\).</li>
+<li>Check how many other datapoints are nearer than \(r\) to this \(x_0\).</li>
+<li>If there are at least \(N\) of datapoints closer than \(r\), \(x_0\)
+is declared to be a <em>core</em> point in the dataset.</li>
+</ol>
+<p>Points that are not core but are close (nearer than \(r\)) to a core point
+are called <em>border</em> points. The rest of them are declared to be <em>outliers</em></p>
+<p>Then DBSCAN searchs for connected patches of core and border points, meaning
+that you can hop on from any of the points in the patch by moving from
+point to point in steps of at most length \(r\). These patches are the
+clusters that we seek.</p>
+<h2 id="on-the-importance-of-geometry">On the importance of geometry</h2>
+<p>One thing you can notice is that DBSCAN&rsquo;s performance is dependent on several
+key factors. First, you need to tune the relevant parameters \(r, N\). Otherwise
+DBSCAN lacks a sense of the scale of density that we are looking for.</p>
+<p>The other, more subtle aspect, is the <em>distance function</em>. Note how when we
+think of abstract data, we have some inertia towards picking simply the
+Euclidean distance, from which we compute the distance of two points as</p>
+<p>$$ d(x,y) = \sqrt{\sum_{i=1}^m (x_i - y_i)^2}$$</p>
+<p>This is definitely <strong>not correct</strong> for clustering spatial data on the Earth!
+To illustrate this, I generated some random data which you can see on
+the next figure. This is the <a href="https://en.wikipedia.org/wiki/Equirectangular_projection">equirrectangular projection</a>
+where we plot geographical longitude and latitude of points.</p>
+
+
+<figure class="center"><img src="/pics/sphere-dbscan/earth-blobs.png"><figcaption>Fig. 1: some randomly generated datapoints on the Earth. Thick outline indicates the centroid of the generated blob, in the same color.</figcaption></figure>
+
+<p>We can see that the DBSCAN algorithm fails at properly clustering generated nearby
+data.</p>
+
+
+<figure class="center"><img src="/pics/sphere-dbscan/dbscan-flat-metric.png"><figcaption>Fig. 2: DBSCAN clustering output with &#39;Euclidean&#39; distance function</figcaption></figure>
+
+<p>In the above figure, clusters 7 and 9 should really be the same, as going around
+the East border should correspond to enter from the West border of the picture.
+Furthermore, clusters 2, 6, 8 and 10 all touch the north-pole, meaning they
+should correspond to a continuous cluster. This also happens at the south pole
+with clusters 0, 1 and 4.</p>
+<p>To solve this deficiency, I wrote a Python module to properly compute
+distances on the round sphere. You can check it out at <a href="https://github.com/jesusaguado/spherics">this Github
+repository</a>. Passing the corrected
+version of the distance function to DBSCAN yields a more realistic
+clustering of the data:</p>
+
+
+<figure class="center"><img src="/pics/sphere-dbscan/dbscan-round-metric.png"><figcaption>Fig. 3: DBSCAN clustering output with correct spherical distance function</figcaption></figure>
+
+<p>Here, points that are close to the poles are clustered together, and so are
+the points that share latitude but differ in 360º in longitude: these are all
+bundled together in cluster number 4.</p>
+<p>Don&rsquo;t be foooled by the different geographical map projections! One should
+never measure distance &ldquo;by eye&rdquo; when dealing with global maps. Objects
+near the poles are closer than they appear; objects close to the
+equator are farther than they seem.</p>
+<h2 id="random-data-on-the-sphere">Random data on the sphere</h2>
+<p>The above cited Python module also has a nice function to generate uniformly
+distributed random datapoints on spheres. Note that should you uniformly generate
+random numbers for the latitude and longitude, the poles will get much
+more density than they deserve, as opposite to regions to the equator.</p>
+<p>One can solve this by generating a 3-dimensional Gaussian distribution of
+points and then normalizing them, as this is a spherically symmetric
+distribution. This is already implemented in the Python module.</p>
+
+  <footer>
+      <center>
+        <a class="center" href="https://jesusaguado.github.io/">Homepage</a>
+      </center>
+  </footer>
+</article>
+
+
+
+</html>
