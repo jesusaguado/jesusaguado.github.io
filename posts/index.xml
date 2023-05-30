@@ -6,7 +6,18 @@
     <description>Recent content in Posts on Jesus Aguado</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 16 Nov 2022 01:03:57 +0100</lastBuildDate><atom:link href="https://jesusaguado.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 30 May 2023 10:22:10 +0200</lastBuildDate><atom:link href="https://jesusaguado.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Decision Trees</title>
+      <link>https://jesusaguado.github.io/posts/decision-tree/</link>
+      <pubDate>Tue, 30 May 2023 10:22:10 +0200</pubDate>
+      
+      <guid>https://jesusaguado.github.io/posts/decision-tree/</guid>
+      <description>This post will introduce decision tree classifiers. You can follow along together with the actual implementation in python with the scikit-learn package.
+You can follow the code here or download it in Jupyter notebook format together with the dataset in this zipped file.
+1. What are decision trees? A decision tree is a statistical or machine learning model geared towards classification or regression. We will focus in the classification problem, and thus we will assume that we have a dataset registering the values of $N$ attributes $(x_1,\dots,x_N)$ and a target variable $y$ which is categorical, i.</description>
+    </item>
+    
     <item>
       <title>Sphere Geometry</title>
       <link>https://jesusaguado.github.io/posts/sphere-geometry/</link>
