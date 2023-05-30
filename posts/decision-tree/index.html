@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Decision Trees | Jesus Aguado</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.112.3">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://jesusaguado.github.io/css/index.css">
+<link rel="canonical" href="https://jesusaguado.github.io/posts/decision-tree/">
+<link rel="alternate" type="application/rss+xml" href="" title="Jesus Aguado">
+<link rel="stylesheet" href="https://jesusaguado.github.io/katex/katex.min.css">
+<script defer src="https://jesusaguado.github.io/katex/katex.min.js"></script>
+<script defer src="https://jesusaguado.github.io/katex/contrib/auto-render.min.js" onload="renderMathInElement(document.body)"></script>
+
+<header>
+  
+    <a href="https://jesusaguado.github.io/" class="title">Jesus Aguado</a>
+  
+  
+</header>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+    integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+    integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4"
+    crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+    integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false}
+            ]
+        });
+    });
+</script>
+
+
+
+<article>
+  <header>
+    <h1>Decision Trees</h1>
+    <time datetime="2023-05-30T10:22:10&#43;02:00">May 30, 2023</time>
+  </header>
+  <p>This post will introduce decision tree classifiers. You can follow
+along together with the actual implementation in python with
+the <code>scikit-learn</code> package.</p>
+<p>You can follow the code <a href="/docs/decision-tree.html">here</a>
+or download it in Jupyter notebook format together
+with the dataset <a href="/docs/decision-tree-files.zip">in this zipped file</a>.</p>
+<h2 id="1-what-are-decision-trees">1. What are decision trees?</h2>
+<p>A decision tree is a statistical or machine learning model geared towards
+classification or regression. We will focus in the classification problem,
+and thus we will assume that we have a dataset registering the values
+of $N$ attributes $(x_1,\dots,x_N)$ and a target variable $y$ which is categorical,
+i.e. it takes values in a finite set.</p>
+<p>For example, and this is detailed in the attached Jupyter notebook file,
+we can consider a dataset of medical patients in which we register the following
+attributes <code>Age</code>, <code>Sex</code>, blood pressure <code>BP</code>, <code>Cholesterol</code> and sodium
+to potassium ratio <code>Na_to_K</code>, together with the target variable of interest
+which register which drug worked best on that patient, named <code>Drug</code>, out
+of five different ones. Let&rsquo;s discuss these variables:</p>
+<ol>
+<li><code>Age</code>, <code>Na_to_K</code>: these are numerical attributes taking continuous values.</li>
+<li><code>Cholesterol</code>, <code>BP</code>: these are categorical variables taking the values <code>HIGH</code>, <code>NORMAL</code> and <code>LOW</code>.</li>
+<li><code>Sex</code>: categorical variable with values <code>F</code> and <code>M</code>.</li>
+<li><code>Drug</code>: categorical variable with values <code>DrugA</code>, <code>DrugB</code>, <code>DrugC</code>, <code>DrugX</code> and  <code>DrugY</code>.</li>
+</ol>
+<p>Categorical variables are best encoded in numbers, and one can do so in several ways.
+For the purposes of building a decision tree it is enough to map for example the
+values {<code>HIGH</code>, <code>NORMAL</code>,<code>LOW</code>} to {1,2,3} for the blood pressure and cholesterol
+variables, and similarly for other categorical variables.
+A decision tree for this classification problem looks as follows:</p>
+
+
+<figure class="center"><img src="/pics/decision-tree/decision-tree.png"><figcaption>Fig. 1: an already trained decision tree model for the classification problem.</figcaption></figure>
+
+<p>Our decision tree model starts at the top box (<em>node</em>) and for a particular observation
+(patient for which we want to predict which medication will work best) it checks
+on its attributes. For example, let&rsquo;s say that we have a patient with
+<code>Na_to_K = 13.4</code>. The model will then go down from the top node towards the
+left branch, because the condition on the top node is satisfied (<code>Na_to_K &lt;= 14.615</code>).
+Otherwise it will go down towards the right. In the second leftmost node of the
+second generation, the model will now check on our observation whether or not
+<code>BP</code> is lower than the cut <code>0.5</code>. This procedure goes on until we end up in
+a terminal node, also called <em>leaf</em> of the tree. The model will then assign
+to our observation the class written on the bottom of the leaf node.</p>
+<h2 id="2-how-to-trainbuild-a-decision-tree">2. How to train/build a decision tree?</h2>
+<p>The above model is already built. In this section we explore how can approach
+the problem of building such a model from some collected dataset. Suppose we
+have a dataset with $M$ observations
+$D_{\text{train}} = \left\{x_1^i,\dots,x_N^i,y_i\right\}_{i=1}^{M}$
+of $N$ variables $x_1,\dots,x_N$ and 1 target variable $y$.</p>
+<p>We start with the whole training dataset $D_{\text{train}}$ and select
+an attribute index $j=1,\dots,N$. We introduce another parameter $t_j$ which
+we will be using as the cut for the first node in the tree. We then partition
+the dataset in two disjoint subsets:</p>
+<p>$$ Q^{l}(j,t_j) = \{(x,y)\in D_{\text{train}} | x_j \leq t_j \} $$
+$$ Q^{r}(j,t_j) = \{(x,y)\in D_{\text{train}} | x_j &gt; t_j \} $$</p>
+<p>Note that $D_\text{train} = Q^l(j,t_j) \sqcup Q^r(j,t_j)$. This partition
+corresponds tentatively to building the first (top) node in our decision tree.
+However, we have to check whether or not this partition is optimal for our
+classification purposes. Think of this as if we are trying to partition the
+dataset in disjoint boxes and we want these boxes, if possible, to contain
+one and only one class of the target variable. We are trying to purify
+or screen our partitions to &ldquo;enrich&rdquo; them in some class. There are various
+numerical measures of how well we are doing this. One of them is
+<a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">Shannon&rsquo;s entropy</a>,
+whihch in our context it is defined for one of the above sets $Q = Q^r, Q^l$
+as
+$$ S(Q) = \sum_{k\in\text{Classes}} -p_k \log(p_k)$$
+where $p_k$ is the proportion of observations in $Q$ of class $y=k$. Note
+that this is a non-negative measureand vanishes if and only if $Q$ is a pure
+set containing only one class. This can be checked easily by noticing
+that $\sum_{k\in\text{Classes}} p_k = 1$ and that $0 \leq p_k \leq 1$.
+So the lower the entropy the better!</p>
+<p>Now we can vary the attribute selected $j$ and the cut threshold $t_j$ so that
+we can minimize the weighted entropy of the partition, namely the function
+$$
+\frac{|Q^l|}{|D|} S(Q^l)+
+\frac{|Q^r|}{|D|} S(Q^r),
+$$
+where $|D|$ is the number of observations in the original dataset. This will
+select, as in our example of a trained decision tree above, the <code>Na_to_K</code>
+attribute ($j$) and the cut $t=14.615$.</p>
+<p>One then proceed iteratively. Let us take the left subset $Q^r$ now as the
+starting dataset overwriting $D$. Should we obtain that $D$ is already pure,
+we stop there, as there&rsquo;s nothing we can do to improve the classification,
+and we declare that node to be a tree. This is exactly what happens on
+our decision tree for the first subset $Q^r$: all those patients responded
+well to <code>DrugY</code>, and that should be our prediction for these kind of observations.</p>
+<p>On the other hand, those observations satisfying <code>Na_to_K&lt;=14.615</code> are still
+very  much mixed in classes. Further classification is need, and to continue building
+the tree we optimize for another attribute and cut.</p>
+<h3 id="some-caveats-cost-functions-overfitting">Some caveats: cost functions, overfitting</h3>
+<p>The above is a somewhat crude simplification of the actual implementations.
+Instead of minimizing the weight sum of the two subsets one maximizes
+the <em>information gain</em> which is defined as the difference in entropy with
+the parent subset. One can also substitute Shannon&rsquo;s entropy with other measures
+such as Gini impurity coefficient
+$$
+G(Q) = \sum_{k\in\text{Classes}} p_k (1-p_k)
+$$</p>
+<p>With a big enough decision tree one can of course achieve perfect classification
+of the training by simply memorizing the classes of all observations with
+a huge tree, as long as observations with the same attributes in the dataset
+share the same class. This is overfitting and it is clearly bad, and we do
+not expect such models to generalize well on data they have not been
+trained on.</p>
+<p>One crude way way we can try to avoid overfitting is by restricting the depth
+of the tree, which in our example above was bounded above by 4. One can
+also impose on nodes to contain more than some minimal number of observations
+to be able to branch out, or even perform statistical significance tests
+(this is known as $\chi^2$-pruning) in order to allow some attribute to
+branch from a node. Other approaches add the size of tree to the overall
+cost function.</p>
+<p>There is some mathematical subtlety in the implementation of the minimization
+procudure described above to select the attribute and cut that best works
+for a given node, and that has to do with the fact that the function
+$$f(j,t_j) =
+\frac{|Q^{\text{left}}|}{|D|} S(Q^{\text{left}})+
+\frac{|Q^{\text{right}}|}{|D|} S(Q^{\text{right}})
+$$
+is clearly not even continuous in the input variables. Most implementations I
+have read about such as the C4.5 or ID3 implementation partition the allowed
+(observed, I guess) range of the attribute $x_j$ in a discrete set
+$\{t_j^1,\dots,t_j^n\}$ and evaluate the cost function only on these finite
+set of values. Note that $f$ not even being continuous means the minimization
+problem cannot be solved via gradient descent, even if we are to cleverly
+estimate the gradient discretely!</p>
+<h2 id="references">References</h2>
+<ol>
+<li><a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html#sklearn.tree.DecisionTreeClassifier">Scikit-learn documentation.</a></li>
+<li>Quinlan, J. R. (1986).  Induction of decision trees.  Machine learning, 1, 81-106.</li>
+</ol>
+
+  <footer>
+      <center>
+        <a class="center" href="https://jesusaguado.github.io/">Homepage</a>
+      </center>
+  </footer>
+</article>
+
+
+
+</html>
