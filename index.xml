@@ -6,7 +6,17 @@
     <description>Recent content on Jesus Aguado</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 30 May 2023 10:22:10 +0200</lastBuildDate><atom:link href="https://jesusaguado.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 03 Jul 2023 10:49:12 +0200</lastBuildDate><atom:link href="https://jesusaguado.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Random Forest Bagging</title>
+      <link>https://jesusaguado.github.io/posts/random-forest-bagging/</link>
+      <pubDate>Mon, 03 Jul 2023 10:49:12 +0200</pubDate>
+      
+      <guid>https://jesusaguado.github.io/posts/random-forest-bagging/</guid>
+      <description>Bagging and Ranfom Forests In this post I want to develop the path started in the previous one by analyzing how to enrich our decision tree models. This will be an introduction to the technique of bagging models and to Random Forest. Both are prime examples of ensembles, in which one uses simple building blocks (also called weak learners) to construct a more powerful model.
+I have explored this with a standard dataset regarding pricing of houses in California.</description>
+    </item>
+    
     <item>
       <title>Decision Trees</title>
       <link>https://jesusaguado.github.io/posts/decision-tree/</link>
